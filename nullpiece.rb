@@ -21,4 +21,8 @@ class NullPiece < Piece
     {symbol: symbol}.inspect
   end
 
+  def to_s
+    "   "
+  end
+
 end
