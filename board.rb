@@ -24,7 +24,7 @@ class Board
   
   attr_reader :rows
   def initialize
-    @rows = Array.new(8) {Array.new(8)}
+    @rows = Array.new(8) {Array.new(8, NullPiece.instance)}
 
     place_pieces
   end
@@ -37,6 +37,10 @@ class Board
   def []=(pos, value)
     row, col = pos
     rows[row][col] = value
+  end
+
+  def in_board?(pos)
+    pos.all? {|idx| idx.between?(0,7)}
   end
 
   def add_piece(piece, pos)
@@ -54,9 +58,20 @@ class Board
     self[end_pos] = start_piece
   end
 
-  def in_board?(pos)
-    pos.all? {|idx| idx.between?(0,7)}
+  def checkmate?(color)
+    in_check?(color) &&
+    player_pieces(color).all? {|piece| piece.valid_moves.empty?}
   end
+
+  def in_check?(color)
+    king_pos = king_position(color)
+
+    opposing_pieces(color).any? do |piece|
+      piece.moves.include?(king_pos)
+    end
+  end
+
+  private
 
   # Place pieces at their initial positions when game starts
   def place_pieces
@@ -70,17 +85,28 @@ class Board
         end
       end
     end
-
-    place_null_piece
   end
 
-  def place_null_piece
-    (0...rows.length).each do |row|
-      (0...rows.length).each do |col|
-        pos = [row, col]
-        self[pos] = NullPiece.instance if self[pos].nil?
-      end
+  def pieces
+    @rows.flatten.select do |piece|
+      piece.symbol != :NULL
     end
+  end
+
+  def king_position(color)
+    king = pieces.find do |piece|
+      piece.color == color && piece.symbol == :K
+    end
+
+    king.position
+  end
+
+  def player_pieces(color)
+    pieces.select {|piece| piece.color == color}
+  end
+
+  def opposing_pieces(color)
+    pieces.reject {|piece| piece.color == color}
   end
 
 end
