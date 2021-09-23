@@ -8,6 +8,23 @@ require_relative "rook"
 require_relative "pawn"
 require_relative "nullpiece"
 
+class Array
+  def deep_dup
+    if self.none? {|el| el.is_a?(Array)}
+      return self.map do |el|
+        if el.class.ancestors.include?(Singleton)
+          el
+        else
+          el.dup
+        end
+      end
+    end
+
+    self.map {|el| el.deep_dup}
+  end
+
+end
+
 class EmptyPositionError < StandardError
   def message
     "Selected position has no piece"
@@ -20,11 +37,18 @@ class ForbiddenMoveError < StandardError
   end
 end
 
+class MoveInCheckError < StandardError
+  def message
+    "This move leaves one of your piece in check"
+  end
+end
+
 class Board
   
-  attr_reader :rows
+  attr_accessor :rows
   def initialize
-    @rows = Array.new(8) {Array.new(8, NullPiece.instance)}
+    @null_piece = NullPiece.instance
+    @rows = Array.new(8) {Array.new(8, @null_piece)}
 
     place_pieces
   end
@@ -49,11 +73,19 @@ class Board
 
   def move_piece(start_pos, end_pos)
     start_piece = self[start_pos] # Piece at start position
-
-    raise EmptyPositionError if start_piece.symbol == :NULL
+    
+    raise EmptyPositionError if start_piece == @null_piece
+    raise MoveInCheckError if !start_piece.valid_moves.include?(end_pos)
     raise ForbiddenMoveError if !start_piece.moves.include?(end_pos)
 
-    self[start_pos] = NullPiece.instance
+    self[start_pos] = @null_piece
+    start_piece.position = end_pos
+    self[end_pos] = start_piece
+  end
+
+  def move_piece!(start_pos, end_pos)
+    start_piece = self[start_pos]
+    self[start_pos] = @null_piece
     start_piece.position = end_pos
     self[end_pos] = start_piece
   end
@@ -69,6 +101,13 @@ class Board
     opposing_pieces(color).any? do |piece|
       piece.moves.include?(king_pos)
     end
+  end
+
+  def deep_dup
+    board_copy = self.dup
+    board_copy.rows = board_copy.rows.deep_dup
+
+    board_copy
   end
 
   private

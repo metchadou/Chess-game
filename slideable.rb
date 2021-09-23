@@ -55,7 +55,7 @@ module Slideable
     next_pos = [prev_pos[0] + dx, prev_pos[1] + dy]
 
     # Shovel all moves that are not blocked by a piece of the same color
-    #or by the capture a piece of the opponent
+    # or by the capture a piece of the opponent
     until !self.board.in_board?(next_pos) || blocked_move?(next_pos, prev_pos)
       unblocked_moves << next_pos
 

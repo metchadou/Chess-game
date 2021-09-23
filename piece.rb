@@ -2,7 +2,8 @@ require "byebug"
 
 class Piece
 
-  attr_reader :color, :board, :position
+  attr_accessor :board
+  attr_reader :color, :position
   def initialize(color, board, position)
     @color, @board, @position = color, board, position
   end
@@ -24,6 +25,18 @@ class Piece
 
   def inspect
     {symbol: symbol, color: color, pos: position}.inspect
+  end
+
+  def valid_moves
+    moves.reject {|pos| move_into_check?(pos)}
+  end
+
+  def move_into_check?(end_pos)
+    board_dup = @board.deep_dup
+    board_dup[@position].board = board_dup
+
+    board_dup.move_piece!(@position, end_pos)
+    board_dup.in_check?(@color)
   end
 
 end
