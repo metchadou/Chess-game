@@ -43,6 +43,12 @@ class MoveInCheckError < StandardError
   end
 end
 
+class MovingOpponentPieceError < StandardError
+  def message
+    "That is your opponent piece"
+  end
+end
+
 class Board
   
   attr_accessor :rows
@@ -71,12 +77,13 @@ class Board
     self[pos] = piece
   end
 
-  def move_piece(start_pos, end_pos)
+  def move_piece(color, start_pos, end_pos)
     start_piece = self[start_pos] # Piece at start position
     
     raise EmptyPositionError if start_piece == @null_piece
-    raise MoveInCheckError if !start_piece.valid_moves.include?(end_pos)
+    raise MovingOpponentPieceError if start_piece.color != color
     raise ForbiddenMoveError if !start_piece.moves.include?(end_pos)
+    raise MoveInCheckError if !start_piece.valid_moves.include?(end_pos)
 
     self[start_pos] = @null_piece
     start_piece.position = end_pos
@@ -110,6 +117,10 @@ class Board
     board_copy
   end
 
+  def update_board_ref_of_pieces
+    pieces.each {|piece| piece.board = self}
+  end
+
   private
 
   # Place pieces at their initial positions when game starts
@@ -127,9 +138,7 @@ class Board
   end
 
   def pieces
-    @rows.flatten.select do |piece|
-      piece.symbol != :NULL
-    end
+    @rows.flatten.reject {|piece| piece == @null_piece}
   end
 
   def king_position(color)

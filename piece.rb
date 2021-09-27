@@ -33,8 +33,8 @@ class Piece
 
   def move_into_check?(end_pos)
     board_dup = @board.deep_dup
-    board_dup[@position].board = board_dup
 
+    board_dup.update_board_ref_of_pieces
     board_dup.move_piece!(@position, end_pos)
     board_dup.in_check?(@color)
   end

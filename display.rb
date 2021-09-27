@@ -4,16 +4,11 @@ require_relative "board"
 require_relative "cursor"
 
 class Display
+
+  attr_reader :board, :cursor
   def initialize(board)
     @board = board
     @cursor = Cursor.new([0,0], board)
-  end
-
-  def test_display
-    while true
-      render
-      @cursor.get_input
-    end
   end
 
   def render
@@ -38,7 +33,11 @@ class Display
   def colorize_piece(piece, pos)
     i, j = pos
     if pos == @cursor.cursor_pos
-      piece.to_s.light_red.on_light_cyan
+      if @cursor.selected
+        piece.to_s.light_white.on_light_red
+      else
+        piece.to_s.light_red.on_light_cyan
+      end
     else
       if i.even?
         if j.even?
@@ -56,8 +55,4 @@ class Display
     end
   end
 
-end
-
-if __FILE__ == $PROGRAM_NAME
-  Display.new(Board.new).test_display
 end
