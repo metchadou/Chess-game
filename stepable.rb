@@ -5,8 +5,8 @@ module Stepable
   def moves
     moves  = []
 
-    move_diffs.each do |pos|
-      potential_move = [self.position, pos].transpose.map(&:sum)
+    move_diffs.each do |end_pos|
+      potential_move = [self.position, end_pos].transpose.map(&:sum)
 
       if self.board.in_board?(potential_move) && !blocked_move?(potential_move)
         moves << potential_move

@@ -22,9 +22,6 @@ class Rook < Piece
   end
 
   def move_dirs
-    vertical_directions = vertical_dirs
-    horizontal_directions = horizontal_dirs
-
-    vertical_directions + horizontal_directions
+    vertical_dirs + horizontal_dirs
   end
 end
